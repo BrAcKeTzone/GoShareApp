@@ -1,6 +1,7 @@
 package main
 
 import (
+	"archive/zip"
 	"context"
 	"encoding/json"
 	"embed"
@@ -11,7 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
+	"strings"
 	"time"
 
 	"github.com/skip2/go-qrcode"
@@ -41,7 +42,7 @@ const asciiLogo = `  ██████╗  ██████╗ ████�
 var serverInstance *http.Server
 var serverRunning = false
 
-func StartServer(isAndroid bool) {
+func StartServer() {
 	port := "6060"
 	ip := getLocalIP()
 	url := fmt.Sprintf("http://%s:%s", ip, port)
@@ -60,11 +61,12 @@ func StartServer(isAndroid bool) {
 	statFiles, _ := fs.Sub(content, "static")
 	mux.Handle("/", http.FileServer(http.FS(statFiles)))
 
-	mux.HandleFunc("/api/list", func(w http.ResponseWriter, r *http.Request) { handleListFiles(w, r, isAndroid) })
-	mux.HandleFunc("/api/download", func(w http.ResponseWriter, r *http.Request) { handleDownloadFile(w, r, isAndroid) })
-	mux.HandleFunc("/api/view", func(w http.ResponseWriter, r *http.Request) { handleViewFile(w, r, isAndroid) })
-	mux.HandleFunc("/api/upload", func(w http.ResponseWriter, r *http.Request) { handleUploadFile(w, r, isAndroid) })
-	mux.HandleFunc("/api/mkdir", func(w http.ResponseWriter, r *http.Request) { handleMkdir(w, r, isAndroid) })
+	mux.HandleFunc("/api/list", handleListFiles)
+	mux.HandleFunc("/api/download", handleDownloadFile)
+	mux.HandleFunc("/api/download-zip", handleDownloadZip)
+	mux.HandleFunc("/api/view", handleViewFile)
+	mux.HandleFunc("/api/upload", handleUploadFile)
+	mux.HandleFunc("/api/mkdir", handleMkdir)
 	mux.HandleFunc("/api/icon", handleAppIcon)
 	
 	// Status endpoint for checking if server is active
@@ -96,14 +98,7 @@ func StartServer(isAndroid bool) {
 	}
 }
 
-func getBaseDirectory(isAndroid bool) string {
-	if isAndroid || runtime.GOOS == "android" {
-		androidStorage := os.Getenv("EXTERNAL_STORAGE")
-		if androidStorage == "" {
-			androidStorage = "/storage/emulated/0"
-		}
-		return androidStorage
-	}
+func getBaseDirectory() string {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return "."
@@ -200,9 +195,9 @@ func hasSubstring(s, sub string) bool {
 	return false
 }
 
-func handleListFiles(w http.ResponseWriter, r *http.Request, isAndroid bool) {
+func handleListFiles(w http.ResponseWriter, r *http.Request) {
 	subPath := r.URL.Query().Get("path")
-	baseDir := getBaseDirectory(isAndroid)
+	baseDir := getBaseDirectory()
 	targetDir := filepath.Join(baseDir, subPath)
 
 	entries, err := os.ReadDir(targetDir)
@@ -232,9 +227,9 @@ func handleListFiles(w http.ResponseWriter, r *http.Request, isAndroid bool) {
 	json.NewEncoder(w).Encode(files)
 }
 
-func handleDownloadFile(w http.ResponseWriter, r *http.Request, isAndroid bool) {
+func handleDownloadFile(w http.ResponseWriter, r *http.Request) {
 	filename := r.URL.Query().Get("file")
-	baseDir := getBaseDirectory(isAndroid)
+	baseDir := getBaseDirectory()
 	filePath := filepath.Join(baseDir, filename)
 
 	baseName := filepath.Base(filePath)
@@ -242,14 +237,62 @@ func handleDownloadFile(w http.ResponseWriter, r *http.Request, isAndroid bool) 
 	http.ServeFile(w, r, filePath)
 }
 
-func handleViewFile(w http.ResponseWriter, r *http.Request, isAndroid bool) {
+func handleDownloadZip(w http.ResponseWriter, r *http.Request) {
+	subPath := r.URL.Query().Get("path")
+	filesParam := r.URL.Query().Get("files")
+	if filesParam == "" {
+		http.Error(w, "No files specified", http.StatusBadRequest)
+		return
+	}
+	fileList := strings.Split(filesParam, ",")
+
+	baseDir := getBaseDirectory()
+	targetDir := filepath.Join(baseDir, subPath)
+
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"goshare_files.zip\"")
+
+	zipWriter := zip.NewWriter(w)
+	defer zipWriter.Close()
+
+	for _, fname := range fileList {
+		fullPath := filepath.Join(targetDir, fname)
+		info, err := os.Stat(fullPath)
+		if err != nil || info.IsDir() {
+			continue
+		}
+
+		fileToZip, err := os.Open(fullPath)
+		if err != nil {
+			continue
+		}
+
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			fileToZip.Close()
+			continue
+		}
+		header.Name = fname
+		header.Method = zip.Deflate
+
+		writer, err := zipWriter.CreateHeader(header)
+		if err != nil {
+			fileToZip.Close()
+			continue
+		}
+		io.Copy(writer, fileToZip)
+		fileToZip.Close()
+	}
+}
+
+func handleViewFile(w http.ResponseWriter, r *http.Request) {
 	filename := r.URL.Query().Get("file")
-	baseDir := getBaseDirectory(isAndroid)
+	baseDir := getBaseDirectory()
 	filePath := filepath.Join(baseDir, filename)
 	http.ServeFile(w, r, filePath)
 }
 
-func handleMkdir(w http.ResponseWriter, r *http.Request, isAndroid bool) {
+func handleMkdir(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -259,7 +302,7 @@ func handleMkdir(w http.ResponseWriter, r *http.Request, isAndroid bool) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	baseDir := getBaseDirectory(isAndroid)
+	baseDir := getBaseDirectory()
 	newDirPath := filepath.Join(baseDir, req.Path, req.Name)
 	if err := os.MkdirAll(newDirPath, 0755); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -268,7 +311,7 @@ func handleMkdir(w http.ResponseWriter, r *http.Request, isAndroid bool) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func handleUploadFile(w http.ResponseWriter, r *http.Request, isAndroid bool) {
+func handleUploadFile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -276,7 +319,7 @@ func handleUploadFile(w http.ResponseWriter, r *http.Request, isAndroid bool) {
 	r.ParseMultipartForm(32 << 20)
 	subPath := r.FormValue("path")
 	files := r.MultipartForm.File["files"]
-	baseDir := getBaseDirectory(isAndroid)
+	baseDir := getBaseDirectory()
 	targetDir := filepath.Join(baseDir, subPath)
 
 	for _, header := range files {

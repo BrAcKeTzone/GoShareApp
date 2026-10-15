@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GOSHARE</title>
+    <link rel="icon" type="image/png" href="icon.png" />
+
     <!-- Importing digital/calculator style monospace font -->
     <link
       href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
@@ -51,6 +53,14 @@
         border: 2px solid #fff;
         object-fit: cover;
       }
+
+      /* Header actions for Desktop */
+      .header-desktop-actions {
+        display: none;
+        gap: 10px;
+      }
+
+      /* Hamburger menu button for Mobile */
       .menu-btn {
         background: none;
         border: none;
@@ -65,6 +75,7 @@
         border-bottom: 2px solid var(--border-sketch);
         display: flex;
         gap: 8px;
+        align-items: center;
       }
       .search-box {
         flex: 1;
@@ -85,6 +96,7 @@
         background: transparent;
       }
 
+      /* Submenu button for Mobile */
       .icon-burger-sm {
         background: #fff;
         border: 2px solid var(--border-sketch);
@@ -93,6 +105,38 @@
         cursor: pointer;
         font-weight: bold;
         font-family: inherit;
+      }
+
+      /* Desktop action buttons container next to search */
+      .desktop-action-buttons {
+        display: none;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .desktop-action-btn {
+        background: #fff;
+        border: 2px solid var(--border-sketch);
+        border-radius: 8px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-weight: bold;
+        font-family: inherit;
+        color: var(--text-main);
+        white-space: nowrap;
+      }
+      .desktop-action-btn:hover {
+        background: var(--accent-light);
+        color: var(--header-bg);
+      }
+
+      /* Highlighted style for the dynamic bulk download button */
+      .bulk-download-btn {
+        background: var(--header-bg) !important;
+        color: #ffffff !important;
+      }
+      .bulk-download-btn:hover {
+        background: #002288 !important;
       }
 
       .path-bar {
@@ -127,6 +171,11 @@
         align-items: center;
         gap: 12px;
       }
+      .file-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
       .file-size {
         color: #555;
         font-size: 0.9rem;
@@ -146,7 +195,7 @@
         background: #002288;
       }
 
-      /* High-Contrast Dropdown Menus */
+      /* High-Contrast Dropdown Menus (Mobile Fallback) */
       .dropdown {
         position: absolute;
         right: 16px;
@@ -177,7 +226,22 @@
         color: var(--header-bg);
       }
 
-      /* Viewer Container (iFrame mode) */
+      /* Custom button look for header desktop buttons */
+      .btn-header-action {
+        background: transparent;
+        border: 2px solid #ffffff;
+        color: #ffffff;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-family: inherit;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .btn-header-action:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      /* Viewer Container */
       #viewerContainer {
         display: none;
         position: fixed;
@@ -219,6 +283,42 @@
         width: 100%;
         background: #ffffff;
       }
+      #imageViewerWrapper {
+        flex: 1;
+        display: none;
+        overflow: auto;
+        background: #111;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+      #fileViewerImg {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        display: block;
+        margin: auto;
+      }
+      #unsupportedWrapper {
+        flex: 1;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: #fff;
+        padding: 20px;
+        text-align: center;
+      }
+      #unsupportedWrapper h3 {
+        color: var(--header-bg);
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+      }
+      #unsupportedWrapper p {
+        color: #555;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+      }
 
       /* Modal Overlay */
       .modal-overlay {
@@ -242,6 +342,48 @@
         padding: 20px;
         box-shadow: 6px 6px 0px rgba(0, 51, 102, 0.9);
       }
+
+      /* About Modal Custom Styling */
+      .about-modal {
+        max-width: 460px;
+        text-align: left;
+        line-height: 1.4;
+      }
+      .about-header {
+        text-align: center;
+        margin-bottom: 15px;
+      }
+      .about-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 10px;
+        border: 2px solid var(--border-sketch);
+        object-fit: cover;
+        margin-bottom: 6px;
+      }
+      .about-title {
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: var(--header-bg);
+        margin: 0;
+      }
+      .about-credits {
+        font-size: 0.95rem;
+        background: var(--accent-light);
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #b3d1ff;
+        margin-bottom: 12px;
+      }
+      .about-credits p {
+        margin: 4px 0;
+      }
+      .about-desc {
+        font-size: 0.9rem;
+        color: #333;
+        margin-bottom: 20px;
+      }
+
       .dropzone {
         border: 3px dashed var(--border-sketch);
         border-radius: 12px;
@@ -249,6 +391,7 @@
         text-align: center;
         margin: 15px 0;
         background: var(--accent-light);
+        cursor: pointer;
       }
       .modal-buttons {
         display: flex;
@@ -276,19 +419,46 @@
         cursor: pointer;
         font-family: inherit;
       }
+
+      /* RESPONSIVE MEDIA QUERIES FOR DESKTOP (Screens >= 768px) */
+      @media (min-width: 768px) {
+        .menu-btn,
+        .icon-burger-sm,
+        #mainMenu,
+        #subMenu {
+          display: none !important;
+        }
+        .header-desktop-actions {
+          display: flex;
+        }
+        .desktop-action-buttons {
+          display: flex;
+        }
+      }
     </style>
   </head>
   <body>
     <header>
       <div class="logo-area">
-        <!-- Using your custom icon image embedded as base64 or linked via api/icon -->
         <img src="icon.png" class="logo-img" alt="GOSHARE Icon" />
         <span>GOSHARE</span>
       </div>
+
+      <!-- Desktop Header Buttons -->
+      <div class="header-desktop-actions">
+        <button class="btn-header-action" onclick="openUploadModal()">
+          📤 Send Files
+        </button>
+        <button class="btn-header-action" onclick="openAboutModal()">
+          ℹ️ About
+        </button>
+      </div>
+
+      <!-- Mobile Hamburger Menu Button -->
       <button class="menu-btn" onclick="toggleMainMenu()">☰</button>
       <div id="mainMenu" class="dropdown">
         <div onclick="openUploadModal()">📤 Send Files</div>
-        <div onclick="showInfo()">ℹ️ Info / About</div>
+        <div onclick="openAboutModal()">ℹ️ About</div>
       </div>
     </header>
 
@@ -302,8 +472,37 @@
           oninput="filterFiles()"
         />
       </div>
+
+      <!-- Desktop Inline Action Buttons (Outside Hamburger) -->
+      <div class="desktop-action-buttons">
+        <!-- Hidden Download Button placed before Home -->
+        <button
+          id="bulkDownloadBtn"
+          class="desktop-action-btn bulk-download-btn"
+          style="display: none"
+          onclick="downloadSelectedFiles()"
+        >
+          📥 Download (<span id="selectedCount">0</span>)
+        </button>
+        <button class="desktop-action-btn" onclick="goHome()">🏠 Home</button>
+        <button class="desktop-action-btn" onclick="loadFiles()">
+          🔄 Refresh
+        </button>
+        <button class="desktop-action-btn" onclick="createNewFolderPrompt()">
+          📁 New Folder
+        </button>
+      </div>
+
+      <!-- Mobile Submenu Hamburger Button -->
       <button class="icon-burger-sm" onclick="toggleSubMenu()">☰</button>
       <div id="subMenu" class="dropdown" style="right: 20px; top: 120px">
+        <div
+          id="mobileBulkDownloadBtn"
+          style="display: none; color: #004acc"
+          onclick="downloadSelectedFiles()"
+        >
+          📥 Download Selected
+        </div>
         <div onclick="goHome()">🏠 Home</div>
         <div onclick="loadFiles()">🔄 Refresh</div>
         <div onclick="createNewFolderPrompt()">📁 New Folder</div>
@@ -318,7 +517,7 @@
       <!-- Dynamic Content Injected Here -->
     </div>
 
-    <!-- Fullscreen iFrame File Viewer Overlay -->
+    <!-- Responsive File / Image Viewer Overlay -->
     <div id="viewerContainer">
       <div class="viewer-header">
         <span id="viewerTitle" style="font-weight: bold; font-size: 1.2rem"
@@ -329,14 +528,31 @@
         </button>
       </div>
       <iframe id="fileViewerFrame"></iframe>
+      <div id="imageViewerWrapper">
+        <img id="fileViewerImg" alt="Image Preview" />
+      </div>
+      <div id="unsupportedWrapper">
+        <h3>Unsupported file format</h3>
+        <p>
+          This file format cannot be previewed directly in the browser. Please
+          click the download button below to view it.
+        </p>
+        <button
+          id="unsupportedDownloadBtn"
+          class="download-btn"
+          style="font-size: 1.1rem; padding: 10px 20px"
+        >
+          Download File
+        </button>
+      </div>
     </div>
 
     <!-- Upload Modal -->
     <div class="modal-overlay" id="uploadModal">
       <div class="modal">
         <h3>Send Files to Current Directory</h3>
-        <div class="dropzone">
-          <p>Select Files or Drop Here...</p>
+        <div class="dropzone" id="dropzoneBox">
+          <p>Drag & Drop Files Here or Browse...</p>
           <input
             type="file"
             id="fileInput"
@@ -371,13 +587,52 @@
       </div>
     </div>
 
+    <!-- About Modal -->
+    <div class="modal-overlay" id="aboutModal">
+      <div class="modal about-modal">
+        <div class="about-header">
+          <img src="icon.png" class="about-icon" alt="GOSHARE Icon" />
+          <div class="about-title">GOSHARE</div>
+        </div>
+        <div class="about-credits">
+          <p><strong>Developer:</strong> J.P. Maniwang</p>
+          <p>
+            <strong>Inspiration:</strong> Inspired by Akansh Sirohi's
+            open-source work, though this tool is not intended to replace ShareX
+            for Android.
+          </p>
+          <p>
+            <strong>Tech Stack:</strong> Written in Go (Golang) with an embedded
+            modern web interface.
+          </p>
+          <p>
+            <strong>Platforms:</strong> This platform is only for Windows, Mac,
+            and Linux.
+          </p>
+        </div>
+        <div class="about-desc">
+          GOSHARE is a lightning-fast, zero-friction cross-platform file-sharing
+          utility that turns your desktop into a secure local web server,
+          letting you seamlessly send and receive files over a local Wi-Fi
+          network or hotspot without needing an active internet connection.
+          Designed with a clean digital calculator aesthetic, it features an
+          instantaneous zero-argument startup for desktop environments.
+        </div>
+        <div class="modal-buttons">
+          <button class="btn-close" onclick="closeAboutModal()">Close</button>
+        </div>
+      </div>
+    </div>
+
     <script>
       let fileData = [];
       let currentSubPath = "";
       let selectedFilesList = [];
+      let selectedDownloadFiles = new Set();
 
       window.onload = () => {
         loadFiles();
+        setupDropzone();
       };
 
       function toggleMainMenu() {
@@ -391,17 +646,20 @@
 
       function openUploadModal() {
         document.getElementById("uploadModal").style.display = "flex";
-        toggleMainMenu();
+        const mainMenu = document.getElementById("mainMenu");
+        if (mainMenu) mainMenu.classList.remove("open");
       }
       function closeUploadModal() {
         document.getElementById("uploadModal").style.display = "none";
       }
 
-      function showInfo() {
-        alert(
-          "GOSHARE v1.2\nDigital-themed local network file sharing tool built with Golang.",
-        );
-        toggleMainMenu();
+      function openAboutModal() {
+        document.getElementById("aboutModal").style.display = "flex";
+        const mainMenu = document.getElementById("mainMenu");
+        if (mainMenu) mainMenu.classList.remove("open");
+      }
+      function closeAboutModal() {
+        document.getElementById("aboutModal").style.display = "none";
       }
 
       async function loadFiles() {
@@ -409,11 +667,14 @@
           "/api/list?path=" + encodeURIComponent(currentSubPath),
         );
         fileData = await res.json();
+        selectedDownloadFiles.clear();
+        updateDownloadButtonState();
         renderFiles(fileData);
         document.getElementById("currentPath").innerText = "/" + currentSubPath;
         document.getElementById("uploadLocationText").innerText =
           "Location: /" + currentSubPath;
-        document.getElementById("subMenu").classList.remove("open");
+        const subMenu = document.getElementById("subMenu");
+        if (subMenu) subMenu.classList.remove("open");
       }
 
       function goHome() {
@@ -422,7 +683,8 @@
       }
 
       async function createNewFolderPrompt() {
-        document.getElementById("subMenu").classList.remove("open");
+        const subMenu = document.getElementById("subMenu");
+        if (subMenu) subMenu.classList.remove("open");
         const folderName = prompt("Enter new folder name:");
         if (!folderName) return;
 
@@ -467,16 +729,19 @@
         items.forEach((item) => {
           const row = document.createElement("div");
           row.className = "file-item";
+          const isChecked = selectedDownloadFiles.has(item.Name);
+
           row.innerHTML = `
-                    <div class="file-info">
-                        <span>${item.IsDir ? "📁" : "📄"}</span>
-                        <div>
-                            <div><strong>${item.Name}</strong></div>
-                            <div class="file-size">${item.IsDir ? "Folder" : formatBytes(item.Size)}</div>
-                        </div>
-                    </div>
-                    ${item.IsDir ? '<span style="font-weight:bold;">➔</span>' : `<button class="download-btn" onclick="event.stopPropagation(); downloadFile('${item.Name}')">Download</button>`}
-                `;
+            <div class="file-info">
+              <input type="checkbox" class="file-checkbox" value="${item.Name}" ${isChecked ? "checked" : ""} onclick="event.stopPropagation(); toggleFileSelection('${item.Name}', this)">
+              <span>${item.IsDir ? "📁" : "📄"}</span>
+              <div>
+                <div><strong>${item.Name}</strong></div>
+                <div class="file-size">${item.IsDir ? "Folder" : formatBytes(item.Size)}</div>
+              </div>
+            </div>
+            ${item.IsDir ? '<span style="font-weight:bold;">➔</span>' : `<button class="download-btn" onclick="event.stopPropagation(); downloadFile('${item.Name}')">Download</button>`}
+          `;
 
           row.onclick = () => {
             if (item.IsDir) {
@@ -492,24 +757,131 @@
         });
       }
 
+      function toggleFileSelection(filename, checkbox) {
+        if (checkbox.checked) {
+          selectedDownloadFiles.add(filename);
+        } else {
+          selectedDownloadFiles.delete(filename);
+        }
+        updateDownloadButtonState();
+      }
+
+      function updateDownloadButtonState() {
+        const count = selectedDownloadFiles.size;
+        const bulkBtn = document.getElementById("bulkDownloadBtn");
+        const mobileBulkBtn = document.getElementById("mobileBulkDownloadBtn");
+        const countSpan = document.getElementById("selectedCount");
+
+        if (count > 0) {
+          if (bulkBtn) {
+            bulkBtn.style.display = "inline-block";
+            countSpan.innerText = count;
+          }
+          if (mobileBulkBtn) {
+            mobileBulkBtn.style.display = "block";
+            mobileBulkBtn.innerText = `📥 Download Selected (${count})`;
+          }
+        } else {
+          if (bulkBtn) bulkBtn.style.display = "none";
+          if (mobileBulkBtn) mobileBulkBtn.style.display = "none";
+        }
+      }
+
+      function downloadSelectedFiles() {
+        const filesArr = Array.from(selectedDownloadFiles);
+        if (filesArr.length === 0) return;
+
+        if (filesArr.length === 1) {
+          downloadFile(filesArr[0]);
+        } else {
+          const currentPathEncoded = encodeURIComponent(currentSubPath);
+          const filesParam = filesArr
+            .map((f) => encodeURIComponent(f))
+            .join(",");
+          window.location.href = `/api/download-zip?path=${currentPathEncoded}&files=${filesParam}`;
+        }
+      }
+
       function openFileInViewer(filename) {
         const filePath = currentSubPath
           ? currentSubPath + "/" + filename
           : filename;
         const viewer = document.getElementById("viewerContainer");
         const frame = document.getElementById("fileViewerFrame");
+        const imgWrapper = document.getElementById("imageViewerWrapper");
+        const imgTag = document.getElementById("fileViewerImg");
+        const unsupportedWrapper =
+          document.getElementById("unsupportedWrapper");
+        const unsupportedDownloadBtn = document.getElementById(
+          "unsupportedDownloadBtn",
+        );
         const title = document.getElementById("viewerTitle");
 
         title.innerText = filename;
-        frame.src = "/api/view?file=" + encodeURIComponent(filePath);
+        const ext = filename.split(".").pop().toLowerCase();
+
+        // Allowed formats: HTML, CSS, JS, TXT, Images, Multimedia (MP4, MP3), PDF
+        const supportedExtensions = [
+          "html",
+          "htm",
+          "css",
+          "js",
+          "txt",
+          "md",
+          "json",
+          "xml",
+          "csv",
+          "png",
+          "jpg",
+          "jpeg",
+          "gif",
+          "webp",
+          "svg",
+          "bmp",
+          "mp4",
+          "webm",
+          "ogg",
+          "mp3",
+          "wav",
+          "pdf",
+        ];
+
+        const imageExtensions = [
+          "png",
+          "jpg",
+          "jpeg",
+          "gif",
+          "webp",
+          "svg",
+          "bmp",
+        ];
+
+        // Reset all views
+        frame.style.display = "none";
+        imgWrapper.style.display = "none";
+        unsupportedWrapper.style.display = "none";
+
+        if (!supportedExtensions.includes(ext)) {
+          unsupportedWrapper.style.display = "flex";
+          unsupportedDownloadBtn.onclick = () => downloadFile(filename);
+        } else if (imageExtensions.includes(ext)) {
+          imgWrapper.style.display = "flex";
+          imgTag.src = "/api/view?file=" + encodeURIComponent(filePath);
+        } else {
+          frame.style.display = "block";
+          frame.src = "/api/view?file=" + encodeURIComponent(filePath);
+        }
+
         viewer.style.display = "flex";
       }
 
       function closeViewer() {
         const viewer = document.getElementById("viewerContainer");
         const frame = document.getElementById("fileViewerFrame");
+        const imgTag = document.getElementById("fileViewerImg");
         viewer.style.display = "none";
         frame.src = "about:blank";
+        imgTag.src = "";
       }
 
       function filterFiles() {
@@ -541,10 +913,46 @@
           "/api/download?file=" + encodeURIComponent(filePath);
       }
 
+      function setupDropzone() {
+        const dropzone = document.getElementById("dropzoneBox");
+        ["dragenter", "dragover"].forEach((eventName) => {
+          dropzone.addEventListener(
+            eventName,
+            (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              dropzone.style.background = "#d0e1ff";
+            },
+            false,
+          );
+        });
+        ["dragleave", "drop"].forEach((eventName) => {
+          dropzone.addEventListener(
+            eventName,
+            (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              dropzone.style.background = "var(--accent-light)";
+            },
+            false,
+          );
+        });
+        dropzone.addEventListener(
+          "drop",
+          (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFileSelect(files);
+          },
+          false,
+        );
+      }
+
       function handleFileSelect(files) {
         selectedFilesList = files;
+        const totalSize = Array.from(files).reduce((acc, f) => acc + f.size, 0);
         document.getElementById("fileStats").innerText =
-          `Files Selected: ${files.length} | Size: ${formatBytes(Array.from(files).reduce((acc, f) => acc + f.size, 0))}`;
+          `Files Selected: ${files.length} | Size: ${formatBytes(totalSize)}`;
         document.getElementById("uploadSubmitBtn").disabled =
           files.length === 0;
       }

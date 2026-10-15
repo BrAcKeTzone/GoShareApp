@@ -1,9 +1,6 @@
-//go:build !android
-// +build !android
-
 package main
 
 func main() {
-    // Instantly start sharing the current working directory without arguments
-    StartServer(false)
+	// Instantly start sharing the current working directory without arguments
+	StartServer()
 }
