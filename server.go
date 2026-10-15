@@ -116,14 +116,26 @@ func getLocalIP() string {
 	if err != nil {
 		return "127.0.0.1"
 	}
+
+	var candidateIP string
+
 	for _, iface := range interfaces {
+		// Skip down interfaces or loopbacks
 		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
 			continue
 		}
+
+		name := iface.Name
+		// Skip virtual adapters to prevent choosing WSL/Docker/VPN IPs
+		if isVirtualAdapter(name) {
+			continue
+		}
+
 		addrs, err := iface.Addrs()
 		if err != nil {
 			continue
 		}
+
 		for _, addr := range addrs {
 			var ip net.IP
 			switch v := addr.(type) {
@@ -132,16 +144,60 @@ func getLocalIP() string {
 			case *net.IPAddr:
 				ip = v.IP
 			}
+
 			if ip == nil || ip.IsLoopback() {
 				continue
 			}
+
 			ip = ip.To4()
-			if ip != nil {
-				return ip.String()
+			if ip == nil {
+				continue
+			}
+
+			ipStr := ip.String()
+
+			// Prioritize standard local Wi-Fi / router ranges
+			if hasPrefix(ipStr, "192.168.") || hasPrefix(ipStr, "10.") {
+				return ipStr
+			}
+
+			// Keep as fallback if it's another local network format (e.g. 172.x)
+			if candidateIP == "" {
+				candidateIP = ipStr
 			}
 		}
 	}
+
+	if candidateIP != "" {
+		return candidateIP
+	}
 	return "127.0.0.1"
+}
+
+func isVirtualAdapter(name string) bool {
+	virtualKeywords := []string{
+		"vEthernet", "VirtualBox", "VMware", "WSL", 
+		"docker", "tun", "tap", "VPN", "Bluetooth",
+	}
+	for _, kw := range virtualKeywords {
+		if len(name) >= len(kw) && hasSubstring(name, kw) {
+			return true
+		}
+	}
+	return false
+}
+
+func hasPrefix(s, prefix string) bool {
+	return len(s) >= len(prefix) && s[0:len(prefix)] == prefix
+}
+
+func hasSubstring(s, sub string) bool {
+	for i := 0; i <= len(s)-len(sub); i++ {
+		if s[i:i+len(sub)] == sub {
+			return true
+		}
+	}
+	return false
 }
 
 func handleListFiles(w http.ResponseWriter, r *http.Request, isAndroid bool) {
